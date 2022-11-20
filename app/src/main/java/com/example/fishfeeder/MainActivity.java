@@ -8,11 +8,14 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.example.fishfeeder.bluetooth.BluetoothService;
+import com.example.fishfeeder.bluetooth.FeedingEvent;
 import com.example.fishfeeder.bluetooth.GetMessage;
 import com.example.fishfeeder.bluetooth.Message;
+import com.example.fishfeeder.bluetooth.PostEventsMessage;
 import com.example.fishfeeder.bluetooth.SyncTimeMessage;
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
@@ -30,9 +33,14 @@ import android.view.MenuItem;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+
 public class MainActivity extends AppCompatActivity {
 
 
+    @RequiresApi(api = Build.VERSION_CODES.S)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
         service.connect();
         service.sendMessage(new SyncTimeMessage());
         service.sendMessage(new GetMessage(new String[]{"temp"},(obj) -> Log.d("xxx",obj.toString())));
+        service.sendMessage(new PostEventsMessage(Collections.singletonList(new FeedingEvent(21, 0, 5))));
     }
 
 }

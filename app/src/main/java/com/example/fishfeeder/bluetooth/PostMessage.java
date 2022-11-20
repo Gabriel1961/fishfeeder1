@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public class PostMessage extends Message{
 
-    public PostMessage(HashMap<String,Object> kvp) {
-        super(MessageType.POST, new JSONObject(kvp));
+    public PostMessage(JSONObject post) {
+        super(MessageType.POST, post);
     }
 }
