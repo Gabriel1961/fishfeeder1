@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="preloaded_fonts" translatable="false">
+        <item>@font/alata</item>
+        <item>@font/allerta</item>
+        <item>@font/arvo_italic</item>
+        <item>@font/baloo</item>
+        <item>@font/carter_one</item>
+        <item>@font/roboto</item>
+        <item>@font/roboto_slab_light</item>
+        <item>@font/roboto_thin</item>
+        <item>@font/robotor</item>
+    </array>
+</resources>

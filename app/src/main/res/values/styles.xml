@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Button.Red" parent="ThemeOverlay.AppCompat">
+        <item name="backgroundTint">@color/red</item>
+        <item name="android:text">Not Con.</item>
+        <item name="cornerRadius">90dp</item>
+    </style>
+    <style name="Button.Green" parent="ThemeOverlay.AppCompat">
+        <item name="backgroundTint">@color/green_enabled</item>
+        <item name="android:text">Con.</item>
+    </style>
+</resources>
