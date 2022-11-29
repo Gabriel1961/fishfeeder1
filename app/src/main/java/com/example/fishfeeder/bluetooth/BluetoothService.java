@@ -55,10 +55,10 @@ public class BluetoothService {
     }
 
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
-    public void connect()
+    public boolean connect()
     {
         // try to connect multiple times to the device
-        int maxTries = 10, tries = 0;
+        int maxTries = 3, tries = 0;
         do
         {
             try {
@@ -71,6 +71,8 @@ public class BluetoothService {
             tries++;
         }while (!socket.isConnected() && tries < maxTries);
 
+        if(!socket.isConnected())
+            return false;
         // Create output and input streams
 
         try {
@@ -86,6 +88,7 @@ public class BluetoothService {
             Log.e("xxx","", e);
         }
         Log.d("xxx","connected to device");
+        return true;
     }
 
     public void sendMessage(Message message)
