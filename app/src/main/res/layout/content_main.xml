@@ -13,9 +13,17 @@
         android:layout_weight="1"
         android:name="com.example.fishfeeder.TempratureDisplayFragment"
         tools:layout="@layout/temprature_display_fragment" />
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragment_container_view1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:name="com.example.fishfeeder.FeedingSettingsFragment"
+        tools:layout="@layout/feeding_settings_fragment"
+        android:layout_marginLeft="10dp" android:layout_marginRight="10dp"/>
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="2"/>
+        android:layout_weight="1" />
         />
 </androidx.appcompat.widget.LinearLayoutCompat>

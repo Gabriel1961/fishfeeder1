@@ -1,6 +1,7 @@
 package com.example.fishfeeder;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,7 +16,6 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 
@@ -48,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
     private AppCompatButton connectedButton;
     private BluetoothService bluetooth;
 
+    public BluetoothService getBluetoohService() { return bluetooth; }
+
     @RequiresApi(api = Build.VERSION_CODES.S)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +61,8 @@ public class MainActivity extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT},1);
             }
-            return;
         }
+
 
         addConnectButtonHandler();
 
@@ -70,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
         bluetooth.sendMessage(new SyncTimeMessage());
         bluetooth.sendMessage(new GetMessage(new String[]{"temp"},(obj) -> Log.d("xxx",obj.toString())));
         bluetooth.sendMessage(new PostEventsMessage(Collections.singletonList(new FeedingEvent(21, 0, 5))));
+
+        NotificationsService ns = new NotificationsService(this);
     }
 
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
@@ -84,12 +88,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void addConnectButtonHandler()
     {
-        connectedButton = (AppCompatButton) findViewById(R.id.connectButton);
-        notConnectedButton = (AppCompatButton) findViewById(R.id.notConnectButton);
+        connectedButton = findViewById(R.id.connectButton);
+        notConnectedButton = findViewById(R.id.notConnectButton);
         notConnectedButton.setOnClickListener(v -> {
             if (!isConnected)
             {
-                //Todo redirect to bluetoothmenu
+                //redirect to bluetoothmenu
+                Intent intentOpenBluetoothSettings = new Intent();
+                intentOpenBluetoothSettings.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
+                startActivity(intentOpenBluetoothSettings);
+
             }
         });
     }

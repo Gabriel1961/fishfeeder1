@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="feeding_frquency">
+        <item>1 time a day</item>
+        <item>2 times a day</item>
+        <item>3 times a day</item>
+    </string-array>
+    <string-array name="feeding_qty">
+        <item> low quantity</item>
+        <item> medium quantity</item>
+        <item> high quantity</item>
+    </string-array>
+</resources>
