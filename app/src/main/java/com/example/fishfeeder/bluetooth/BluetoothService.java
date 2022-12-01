@@ -35,6 +35,24 @@ public class BluetoothService {
     InputStream input;
     UUID deviceUUID;
     Handler responseHandler;
+    boolean connected;
+    public ArrayList<ConnectionChangedEvent> connectionChangedEvents = new ArrayList<>();
+
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+        for( ConnectionChangedEvent e : connectionChangedEvents)
+            e.run(connected);
+    }
+
+    public interface ConnectionChangedEvent
+    {
+        void run(boolean value);
+    }
+
     /**
      * this event runs whenever a message is received (it is called from the backround thread)
      * so if ui or viewmodel changes are necessary, you need to invoke them using MainActivity::runOnUiThread
@@ -55,7 +73,7 @@ public class BluetoothService {
     }
 
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
-    public boolean connect()
+    public void connect()
     {
         // try to connect multiple times to the device
         int maxTries = 3, tries = 0;
@@ -72,7 +90,10 @@ public class BluetoothService {
         }while (!socket.isConnected() && tries < maxTries);
 
         if(!socket.isConnected())
-            return false;
+        {
+            setConnected(false);
+            return;
+        }
         // Create output and input streams
 
         try {
@@ -88,7 +109,7 @@ public class BluetoothService {
             Log.e("xxx","", e);
         }
         Log.d("xxx","connected to device");
-        return true;
+        setConnected(true);
     }
 
     public void sendMessage(Message message)

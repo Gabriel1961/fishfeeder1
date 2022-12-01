@@ -29,21 +29,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class MainActivity extends AppCompatActivity {
 
-    private boolean isConnected;
-    public void setIsConnected(boolean value)
-    {
-        isConnected = value;
-        if(isConnected)
-        {
-            notConnectedButton.setVisibility(View.GONE);
-            connectedButton.setVisibility(View.VISIBLE);
-        }
-        else
-        {
-            notConnectedButton.setVisibility(View.VISIBLE);
-            connectedButton.setVisibility(View.GONE);
-        }
-    }
     private AppCompatButton notConnectedButton;
     private AppCompatButton connectedButton;
     private BluetoothService bluetooth;
@@ -63,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-
         addConnectButtonHandler();
 
         bluetooth = new BluetoothService(Constants.hc05_classID,Constants.hc05_UUID);
@@ -76,22 +60,39 @@ public class MainActivity extends AppCompatActivity {
         NotificationsService ns = new NotificationsService(this);
     }
 
+    /**
+     * Connects to the bluetooth device asyncronously
+     */
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     private void connectAsync()
     {
         ScheduledExecutorService ex = new ScheduledThreadPoolExecutor(1);
-        ex.execute(() -> {
-            boolean res = this.bluetooth.connect();
-            this.runOnUiThread(()->this.setIsConnected(res));
-        });
+        // add handler to change the state of the connected button if the connection to the bluetooth device succeeds
+        bluetooth.connectionChangedEvents.add((con)-> this.runOnUiThread(()->{
+            if(con)
+            {
+                notConnectedButton.setVisibility(View.GONE);
+                connectedButton.setVisibility(View.VISIBLE);
+            }
+            else
+            {
+                notConnectedButton.setVisibility(View.VISIBLE);
+                connectedButton.setVisibility(View.GONE);
+            }
+        }));
+
+        ex.execute(() -> this.bluetooth.connect());
     }
 
+    /**
+     * adds functionality to the connect button on the upper right side of the main app screen
+     */
     private void addConnectButtonHandler()
     {
         connectedButton = findViewById(R.id.connectButton);
         notConnectedButton = findViewById(R.id.notConnectButton);
         notConnectedButton.setOnClickListener(v -> {
-            if (!isConnected)
+            if (!bluetooth.isConnected())
             {
                 //redirect to bluetoothmenu
                 Intent intentOpenBluetoothSettings = new Intent();
