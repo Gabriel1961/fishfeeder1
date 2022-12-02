@@ -30,7 +30,6 @@ public class NotificationsService {
     public NotificationsService(Activity activity)
     {
         this.activity = activity;
-        scheduleAlarm();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.S)
@@ -44,8 +43,17 @@ public class NotificationsService {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
         AlarmManager manager = (AlarmManager) activity.getSystemService(ALARM_SERVICE);
-        manager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()+3000,pi);
-        Log.d("xxx","scheduled alarm");
+        boolean alarmEnabled = (PendingIntent.getBroadcast(activity.getApplicationContext(), requestCode,
+                intent,
+                PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE) != null);
+        if(!alarmEnabled)
+        {
+            manager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()+3_000,AlarmManager.INTERVAL_DAY*7,pi);
+            Log.d("xxx","scheduled notification");
+        }
+        else
+            Log.d("xxx","notification already scheduled");
+
     }
 
 

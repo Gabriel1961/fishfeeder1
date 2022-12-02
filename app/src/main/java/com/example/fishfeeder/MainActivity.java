@@ -60,9 +60,8 @@ public class MainActivity extends AppCompatActivity {
             //bluetooth.sendMessage(new GetMessage(new String[]{"temp"},(obj) -> Log.d("xxx",obj!=null ? obj.toString() : "")));
         });
 
-        //notificationsService = new NotificationsService(this);
-        // notificationsService.scheduleAlarm(); // TODO not working
-
+        notificationsService = new NotificationsService(this);
+        notificationsService.scheduleAlarm();
     }
 
     /**
