@@ -16,6 +16,7 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 
@@ -34,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothService bluetooth;
     private NotificationsService notificationsService;
     public BluetoothService getBluetoohService() { return bluetooth; }
-
+    private Handler messageHandler;
     @RequiresApi(api = Build.VERSION_CODES.S)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,25 +48,28 @@ public class MainActivity extends AppCompatActivity {
                 requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT},1);
             }
         }
-
+        messageHandler = new Handler();
         addConnectButtonHandler();
 
         bluetooth = new BluetoothService(Constants.hc05_classID,Constants.hc05_UUID);
-        /*
-        connectAsync();
-        bluetooth.sendMessage(new SyncTimeMessage());
-        bluetooth.sendMessage(new GetMessage(new String[]{"temp"},(obj) -> Log.d("xxx",obj.toString())));
-        bluetooth.sendMessage(new PostEventsMessage(Collections.singletonList(new FeedingEvent(21, 0, 5))));
-        */
-        notificationsService = new NotificationsService(this);
-        notificationsService.scheduleAlarm();
+        connectAsync(()->{
+            bluetooth.sendMessage(new SyncTimeMessage());
+            bluetooth.sendMessage(new GetMessage(new String[]{"temp"},(obj) -> Log.d("xxx",obj.toString())));
+            bluetooth.sendMessage(new PostEventsMessage(Collections.singletonList(new FeedingEvent(21, 0, 5))));
+            bluetooth.sendMessage(new GetMessage(new String[]{"temp", "temps"},(obj) -> Log.d("xxx",obj!=null ? obj.toString() : "")));
+            //bluetooth.sendMessage(new GetMessage(new String[]{"temp"},(obj) -> Log.d("xxx",obj!=null ? obj.toString() : "")));
+        });
+
+        //notificationsService = new NotificationsService(this);
+        // notificationsService.scheduleAlarm(); // TODO not working
+
     }
 
     /**
      * Connects to the bluetooth device asyncronously
      */
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
-    private void connectAsync()
+    private void connectAsync(Runnable runOnDone)
     {
         ScheduledExecutorService ex = new ScheduledThreadPoolExecutor(1);
         // add handler to change the state of the connected button if the connection to the bluetooth device succeeds
@@ -82,7 +86,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }));
 
-        ex.execute(() -> this.bluetooth.connect());
+        ex.execute(() -> {
+            this.bluetooth.connect();
+            runOnDone.run();
+        });
+
     }
 
     /**

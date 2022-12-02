@@ -33,6 +33,7 @@ public class BluetoothService {
     BluetoothSocket socket;
     OutputStream output;
     InputStream input;
+    Scanner scannerInput;
     UUID deviceUUID;
     Handler responseHandler;
     boolean connected;
@@ -76,7 +77,7 @@ public class BluetoothService {
     public void connect()
     {
         // try to connect multiple times to the device
-        int maxTries = 3, tries = 0;
+        int maxTries = 5, tries = 0;
         do
         {
             try {
@@ -109,7 +110,9 @@ public class BluetoothService {
             Log.e("xxx","", e);
         }
         Log.d("xxx","connected to device");
+        scannerInput = new Scanner(input);
         setConnected(true);
+
     }
 
     public void sendMessage(Message message)
@@ -140,10 +143,10 @@ public class BluetoothService {
      *
      */
     public JSONObject read() {
-        Scanner sc = new Scanner(input);
-        if(sc.hasNext())
+
+        if(scannerInput.hasNext())
         {
-            String r = sc.nextLine();
+            String r = scannerInput.nextLine();
             JSONObject obj = null;
             try {
                 obj = new JSONObject(r);

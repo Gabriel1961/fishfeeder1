@@ -1,27 +1,23 @@
 package com.example.fishfeeder;
 
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.graphics.Color;
-import android.graphics.DashPathEffect;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.os.Debug;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavType;
 
+import com.example.fishfeeder.bluetooth.BluetoothService;
+import com.example.fishfeeder.bluetooth.GetMessage;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.components.Description;
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -31,14 +27,48 @@ import com.github.mikephil.charting.formatter.IFillFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.github.mikephil.charting.utils.Utils;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.sql.Array;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 public class TempratureDisplayFragment extends Fragment
 {
     LineChart chart;
+    BluetoothService bluetoothService;
+    private Handler handler;
+    LineDataSet lineDataSet;
+    TextView currentTempDisplay;
+    private long delayPeriod = 1000; // in ms
+
+    Runnable tempUpdate = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                bluetoothService.sendMessage(new GetMessage(new String[]{"temp","temps"},(data)->{
+                    try {
+                        ArrayList<Entry> entries = new ArrayList<>();
+                        JSONArray arr = data.getJSONArray("temps");
+                        for(int i=0;i<arr.length();i++)
+                            entries.add(new Entry(i+1,(float)arr.getDouble(i)));
+                        setData(entries);
+                        String str = getActivity().getResources().getText(R.string.current_tempreture) + " " + new DecimalFormat("0.0").format(data.getDouble("temp")) + " °C";
+                        currentTempDisplay.setText(str);
+                    } catch (JSONException e) {
+                        Log.e("xxx",e.toString());
+                    }
+                }));
+            } finally {
+              handler.postDelayed(tempUpdate,delayPeriod);
+            }
+        }
+    };
+
     public TempratureDisplayFragment() {
         super(R.layout.temprature_display_fragment);
     }
@@ -47,7 +77,11 @@ public class TempratureDisplayFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         chart = view.findViewById(R.id.tempChart);
         initChart();
-        setData(10,10);
+        setDummyData(10,10);
+        handler = new Handler();
+        bluetoothService = ((MainActivity)getActivity()).getBluetoohService();
+        currentTempDisplay = getActivity().findViewById(R.id.currentTempDisplay);
+        tempUpdate.run();
     }
 
     private void initChart()
@@ -81,7 +115,7 @@ public class TempratureDisplayFragment extends Fragment
         chart.setExtraBottomOffset(4f);
 
         YAxis ly = chart.getAxisLeft();
-        ly.setLabelCount(5, false);
+        ly.setLabelCount(5, true);
         ly.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
         ly.setAxisLineColor(Color.WHITE);
         ly.setDrawGridLines(false);
@@ -111,7 +145,24 @@ public class TempratureDisplayFragment extends Fragment
     }
 
 
-    private void setData(int count, float range)
+    private void setData(ArrayList<Entry> values)
+    {
+        lineDataSet.setValues(values);
+        LineData data = new LineData(lineDataSet);
+        data.setValueTextSize(9f);
+        data.setDrawValues(false);
+        chart.setData(data);
+        chart.getData().notifyDataChanged();
+        chart.notifyDataSetChanged();
+        float maxY = 0;
+        for(Entry e : values)
+            maxY = Math.max(maxY,e.getY());
+        chart.getAxisLeft().setAxisMaximum(maxY + 4);
+        chart.invalidate();
+    }
+
+
+    private void setDummyData(int count, float range)
     {
 
         ArrayList<Entry> values = new ArrayList<>();
@@ -121,31 +172,30 @@ public class TempratureDisplayFragment extends Fragment
             values.add(new Entry(i, val));
         }
 
-        LineDataSet set1;
 
         if (chart.getData() != null &&
                 chart.getData().getDataSetCount() > 0) {
-            set1 = (LineDataSet) chart.getData().getDataSetByIndex(0);
-            set1.setValues(values);
+            lineDataSet = (LineDataSet) chart.getData().getDataSetByIndex(0);
+            lineDataSet.setValues(values);
             chart.getData().notifyDataChanged();
             chart.notifyDataSetChanged();
         } else {
             // create a dataset and give it a type
-            set1 = new LineDataSet(values, "DataSet 1");
+            lineDataSet = new LineDataSet(values, "DataSet 1");
 
-            set1.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-            set1.setCubicIntensity(0.2f);
-            set1.setDrawFilled(true);
-            set1.setDrawCircles(false);
-            set1.setLineWidth(3.0f);
-            set1.setCircleRadius(6f);
-            set1.setCircleColor(Color.WHITE);
-            set1.setHighLightColor(Color.rgb(244, 117, 117));
-            set1.setColor(Color.WHITE);
-            set1.setFillDrawable(ContextCompat.getDrawable(getActivity(),R.drawable.white_transparent));
-            set1.setFillAlpha(100);
-            set1.setDrawHorizontalHighlightIndicator(false);
-            set1.setFillFormatter(new IFillFormatter() {
+            lineDataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+            lineDataSet.setCubicIntensity(0.2f);
+            lineDataSet.setDrawFilled(true);
+            lineDataSet.setDrawCircles(false);
+            lineDataSet.setLineWidth(3.0f);
+            lineDataSet.setCircleRadius(6f);
+            lineDataSet.setCircleColor(Color.WHITE);
+            lineDataSet.setHighLightColor(Color.rgb(244, 117, 117));
+            lineDataSet.setColor(Color.WHITE);
+            lineDataSet.setFillDrawable(ContextCompat.getDrawable(getActivity(),R.drawable.white_transparent));
+            lineDataSet.setFillAlpha(100);
+            lineDataSet.setDrawHorizontalHighlightIndicator(false);
+            lineDataSet.setFillFormatter(new IFillFormatter() {
                 @Override
                 public float getFillLinePosition(ILineDataSet dataSet, LineDataProvider dataProvider) {
                     return chart.getAxisLeft().getAxisMinimum();
@@ -153,7 +203,7 @@ public class TempratureDisplayFragment extends Fragment
             });
 
             // create a data object with the data sets
-            LineData data = new LineData(set1);
+            LineData data = new LineData(lineDataSet);
             data.setValueTextSize(9f);
             data.setDrawValues(false);
 
