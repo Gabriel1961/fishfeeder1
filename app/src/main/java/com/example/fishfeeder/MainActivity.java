@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private AppCompatButton notConnectedButton;
     private AppCompatButton connectedButton;
     private BluetoothService bluetooth;
-
+    private NotificationsService notificationsService;
     public BluetoothService getBluetoohService() { return bluetooth; }
 
     @RequiresApi(api = Build.VERSION_CODES.S)
@@ -51,13 +51,14 @@ public class MainActivity extends AppCompatActivity {
         addConnectButtonHandler();
 
         bluetooth = new BluetoothService(Constants.hc05_classID,Constants.hc05_UUID);
+        /*
         connectAsync();
-
         bluetooth.sendMessage(new SyncTimeMessage());
         bluetooth.sendMessage(new GetMessage(new String[]{"temp"},(obj) -> Log.d("xxx",obj.toString())));
         bluetooth.sendMessage(new PostEventsMessage(Collections.singletonList(new FeedingEvent(21, 0, 5))));
-
-        NotificationsService ns = new NotificationsService(this);
+        */
+        notificationsService = new NotificationsService(this);
+        notificationsService.scheduleAlarm();
     }
 
     /**
