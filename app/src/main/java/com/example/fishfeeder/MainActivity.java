@@ -52,12 +52,9 @@ public class MainActivity extends AppCompatActivity {
         addConnectButtonHandler();
 
         bluetooth = new BluetoothService(Constants.hc05_classID,Constants.hc05_UUID);
+
         connectAsync(()->{
             bluetooth.sendMessage(new SyncTimeMessage());
-            bluetooth.sendMessage(new GetMessage(new String[]{"temp"},(obj) -> Log.d("xxx",obj.toString())));
-            bluetooth.sendMessage(new PostEventsMessage(Collections.singletonList(new FeedingEvent(21, 0, 5))));
-            bluetooth.sendMessage(new GetMessage(new String[]{"temp", "temps"},(obj) -> Log.d("xxx",obj!=null ? obj.toString() : "")));
-            //bluetooth.sendMessage(new GetMessage(new String[]{"temp"},(obj) -> Log.d("xxx",obj!=null ? obj.toString() : "")));
         });
 
         notificationsService = new NotificationsService(this);

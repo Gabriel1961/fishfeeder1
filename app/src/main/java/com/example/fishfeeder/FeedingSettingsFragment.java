@@ -26,7 +26,9 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-
+/**
+ * Displays the feeding program ui
+ */
 public class FeedingSettingsFragment extends Fragment {
 
     public FeedingSettingsFragment()

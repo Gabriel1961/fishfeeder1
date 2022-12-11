@@ -36,7 +36,9 @@ import java.sql.Array;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-
+/**
+Displays tempreture chart and current tempreture
+ */
 public class TempratureDisplayFragment extends Fragment
 {
     LineChart chart;
@@ -77,7 +79,6 @@ public class TempratureDisplayFragment extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         chart = view.findViewById(R.id.tempChart);
         initChart();
-        setDummyData(10,10);
         handler = new Handler();
         bluetoothService = ((MainActivity)getActivity()).getBluetoohService();
         currentTempDisplay = getActivity().findViewById(R.id.currentTempDisplay);
@@ -161,54 +162,4 @@ public class TempratureDisplayFragment extends Fragment
         chart.invalidate();
     }
 
-
-    private void setDummyData(int count, float range)
-    {
-
-        ArrayList<Entry> values = new ArrayList<>();
-
-        for (int i = 0; i < count; i++) {
-            float val = (float) (Math.random() * (range + 1)) + 20;
-            values.add(new Entry(i, val));
-        }
-
-
-        if (chart.getData() != null &&
-                chart.getData().getDataSetCount() > 0) {
-            lineDataSet = (LineDataSet) chart.getData().getDataSetByIndex(0);
-            lineDataSet.setValues(values);
-            chart.getData().notifyDataChanged();
-            chart.notifyDataSetChanged();
-        } else {
-            // create a dataset and give it a type
-            lineDataSet = new LineDataSet(values, "DataSet 1");
-
-            lineDataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-            lineDataSet.setCubicIntensity(0.2f);
-            lineDataSet.setDrawFilled(true);
-            lineDataSet.setDrawCircles(false);
-            lineDataSet.setLineWidth(3.0f);
-            lineDataSet.setCircleRadius(6f);
-            lineDataSet.setCircleColor(Color.WHITE);
-            lineDataSet.setHighLightColor(Color.rgb(244, 117, 117));
-            lineDataSet.setColor(Color.WHITE);
-            lineDataSet.setFillDrawable(ContextCompat.getDrawable(getActivity(),R.drawable.white_transparent));
-            lineDataSet.setFillAlpha(100);
-            lineDataSet.setDrawHorizontalHighlightIndicator(false);
-            lineDataSet.setFillFormatter(new IFillFormatter() {
-                @Override
-                public float getFillLinePosition(ILineDataSet dataSet, LineDataProvider dataProvider) {
-                    return chart.getAxisLeft().getAxisMinimum();
-                }
-            });
-
-            // create a data object with the data sets
-            LineData data = new LineData(lineDataSet);
-            data.setValueTextSize(9f);
-            data.setDrawValues(false);
-
-            // set data
-            chart.setData(data);
-        }
-    }
 }
